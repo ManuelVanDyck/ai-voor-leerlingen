@@ -87,17 +87,57 @@ function parseQuizzes(text: string) {
   return quizzes;
 }
 
-// Remove quiz blocks from markdown for clean rendering
-function removeQuizzes(text: string): string {
-  // Remove **Vraag X:** blocks including options and answer
-  return text.replace(
-    /\*\*Vraag \d+:\*\*[\s\S]*?(?=\*\*Vraag \d+:\*\*|\n## |\n### |\Z)/g,
-    (match) => {
-      // Only remove if it contains answer pattern (is a quiz)
-      if (/\*Antwort:/.test(match) || /\*Antwoord:/.test(match)) return "";
-      return match;
-    }
+// Remove quiz blocks, exercises, and answer keys from markdown for clean rendering
+function cleanContentForLoggedInUser(text: string): string {
+  let result = text;
+
+  // Remove answer keys anywhere in the content first
+  result = result.replace(/\*Antwoord:[^\n]*/g, "");
+
+  // Remove complete quiz blocks with both formats
+  // Format 1: **Vraag X:** ... options ... *Antwoord: X
+  result = result.replace(
+    /\*\*Vraag \d+:\*\*[\s\S]*?\*Antwoord:[^\n]*/g,
+    ""
   );
+
+  // Format 2: **X. ... ... *Antwoord: X
+  result = result.replace(
+    /\*\*\d+\.\s[\s\S]*?\*Antwoord:[^\n]*/g,
+    ""
+  );
+
+  // Remove "Check je kennis" sections completely
+  result = result.replace(/###\s*Check je kennis[\s\S]*?(?=\n### |\n## )/g, "");
+  result = result.replace(/###\s*Check je kennis -.*[\s\S]*?(?=\n### |\n## )/g, "");
+
+  // Remove "Oefening" sections completely
+  result = result.replace(/###\s*Oefening:[\s\S]*?(?=\n### |\n## )/g, "");
+  result = result.replace(/###\s*Oefening[\s\S]*?(?=\n### |\n## )/g, "");
+
+  // Remove "Bonusvraag" sections
+  result = result.replace(/\*\*Bonusvraag:[\s\S]*?(?=\n### |\n## )/g, "");
+
+  // Remove quiz blocks with numbered questions (**1. Question** format)
+  result = result.replace(/\*\*\d+\.\s[\s\S]*?\*Antwoord:[^\n]*/g, "");
+
+  // Remove any empty lines that might have been left behind
+  const lines = result.split("\n");
+  const filtered: string[] = [];
+  let lastNonEmpty = -1;
+
+  for (const line of lines) {
+    if (line.trim() !== "") {
+      filtered.push(line);
+      lastNonEmpty = filtered.length - 1;
+    } else if (lastNonEmpty >= 0 && filtered[lastNonEmpty].trim() !== "") {
+      // Only keep one empty line between non-empty lines
+      filtered.push(line);
+    }
+  }
+
+  // Clean up any multiple empty lines at the end
+  return filtered.join("\n").replace(/\n\s*\n\s*\n/g, "\n\n").trim();
 }
 
 export default function LessonClient({
@@ -134,47 +174,7 @@ export default function LessonClient({
     }
 
     // When logged in, remove quiz sections, exercises, and answer keys
-    let text = content;
-
-    // Remove answer keys anywhere in the content
-    text = text.replace(/\*Antwoord:[^\n]*/g, "");
-
-    // Remove quiz blocks more carefully - find and remove complete blocks
-    const quizRegex = /\*\*(?:Vraag \d+:|\d+\.\s)[^*]+\n(?:- [A-D][^\n]*\n)*\*Antwoord:[^\n]*/g;
-    let match;
-    while ((match = quizRegex.exec(text)) !== null) {
-      text = text.replace(match[0], "");
-    }
-
-    // Remove exercise sections (Oefening)
-    text = text.replace(/###\s*Oefening:[\s\S]*?(?=\n### |\n## )/g, "");
-    text = text.replace(/###\s*Oefening[\s\S]*?(?=\n### |\n## )/g, "");
-
-    // Remove "Check je kennis" sections
-    text = text.replace(/###\s*Check je kennis[\s\S]*?(?=\n### |\n## )/g, "");
-    text = text.replace(/###\s*Check je kennis -.*[\s\S]*?(?=\n### |\n## )/g, "");
-
-    // Remove bonusvraag sections
-    text = text.replace(/\*\*Bonusvraag:[\s\S]*?(?=\n### |\n## )/g, "");
-
-    // Remove empty lines that might have been left behind
-    const lines = text.split("\n");
-    const filtered: string[] = [];
-    let lastNonEmpty = -1;
-
-    for (const line of lines) {
-      if (line.trim() !== "") {
-        filtered.push(line);
-        lastNonEmpty = filtered.length - 1;
-      } else if (lastNonEmpty >= 0) {
-        // Only keep one empty line between non-empty lines
-        if (filtered[lastNonEmpty].trim() !== "") {
-          filtered.push(line);
-        }
-      }
-    }
-
-    return filtered.join("\n").trim();
+    return cleanContentForLoggedInUser(content);
   }, [content, session?.user]);
 
   const handleComplete = () => {
@@ -214,6 +214,130 @@ export default function LessonClient({
           <span>•</span>
           <span>{prog.completed}/{prog.total} lessen voltooid</span>
         </div>
+      </div>
+
+      {/* Interactive Quiz section (if any) - shown only when logged in */}
+      {quizzes.length > 0 && session?.user && (
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            📝 Check je kennis
+          </h2>
+          <div className="space-y-6">
+            {quizzes.map((quiz, qi) => (
+              <div key={qi} className="border border-gray-200 rounded-lg p-5">
+                <p className="font-medium text-gray-800 mb-4">
+                  <span className="text-brand-red font-semibold">{qi + 1}.</span> {quiz.question}
+                </p>
+                <div className="space-y-3 mb-4">
+                  {quiz.options.map((opt) => (
+                    <label
+                      key={opt.letter}
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        checked[qi]
+                          ? opt.letter === quiz.answer
+                            ? "border-brand-green bg-emerald-50"
+                            : answers[qi] === opt.letter
+                            ? "border-red-400 bg-red-50"
+                            : "border-gray-200 hover:border-gray-300"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name={`quiz-${qi}`}
+                        value={opt.letter}
+                        checked={answers[qi] === opt.letter}
+                        onChange={(e) => {
+                          if (!checked[qi]) {
+                            setAnswers({ ...answers, [qi]: e.target.value });
+                          }
+                        }}
+                        disabled={checked[qi]}
+                        className="w-4 h-4 text-brand-green focus:ring-brand-green"
+                      />
+                      <span className="text-gray-700 flex-1">{opt.text}</span>
+                      {checked[qi] && opt.letter === quiz.answer && (
+                        <span className="text-brand-green font-semibold">✅ Correct</span>
+                      )}
+                      {checked[qi] && answers[qi] === opt.letter && opt.letter !== quiz.answer && (
+                        <span className="text-red-400 font-semibold">❌ Fout</span>
+                      )}
+                    </label>
+                  ))}
+                </div>
+                {!checked[qi] && (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => {
+                        if (answers[qi]) setChecked({ ...checked, [qi]: true });
+                      }}
+                      disabled={!answers[qi]}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        answers[qi]
+                          ? "bg-brand-red text-white hover:bg-red-700"
+                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      Controleer
+                    </button>
+                  </div>
+                )}
+                {checked[qi] && (
+                  <div className={`mt-3 p-3 rounded-lg text-sm ${
+                    answers[qi] === quiz.answer
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}>
+                    <strong>Jouw antwoord: {answers[qi] || 'Geen antwoord'}</strong>
+                    {answers[qi] !== quiz.answer && (
+                      <div className="mt-1">
+                        <strong>Correct antwoord: {quiz.answer}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quiz section (if any) - shown when not logged in */}
+      {quizzes.length > 0 && !session?.user && (
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            📝 Quiz
+          </h2>
+          <div className="space-y-6">
+            {quizzes.map((quiz, qi) => (
+              <div key={qi} className="border-b border-gray-100 pb-5 last:border-0">
+                <p className="font-medium text-gray-800 mb-3">
+                  {qi + 1}. {quiz.question}
+                </p>
+                <div className="space-y-2">
+                  {quiz.options.map((opt) => (
+                    <button
+                      key={opt.letter}
+                      className="w-full text-left p-3 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-all flex items-center gap-3"
+                    >
+                      <span
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600 flex-shrink-0"
+                      >
+                        {opt.letter}
+                      </span>
+                      <span className="text-gray-700">{opt.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Markdown content */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up prose-lesson">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
       </div>
 
       {/* Opdracht Component (for Module 1 Les 3) */}
@@ -305,88 +429,6 @@ export default function LessonClient({
           opdrachten={module4OpdrachtenLes4}
         />
       )}
-
-      {/* Quiz section (if any) */}
-      {quizzes.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            📝 Quiz
-          </h2>
-          <div className="space-y-6">
-            {quizzes.map((quiz, qi) => (
-              <div key={qi} className="border-b border-gray-100 pb-5 last:border-0">
-                <p className="font-medium text-gray-800 mb-3">
-                  {qi + 1}. {quiz.question}
-                </p>
-                <div className="space-y-2">
-                  {quiz.options.map((opt) => {
-                    const isSelected = answers[qi] === opt.letter;
-                    const isCorrect = checked[qi] && opt.letter === quiz.answer;
-                    const isWrong = checked[qi] && isSelected && opt.letter !== quiz.answer;
-
-                    return (
-                      <button
-                        key={opt.letter}
-                        onClick={() => {
-                          if (!checked[qi]) {
-                            setAnswers({ ...answers, [qi]: opt.letter });
-                          }
-                        }}
-                        className={`w-full text-left p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
-                          isCorrect
-                            ? "border-brand-green bg-emerald-50"
-                            : isWrong
-                            ? "border-red-400 bg-red-50"
-                            : isSelected
-                            ? "border-brand-orange bg-orange-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        } ${checked[qi] ? "cursor-default" : "cursor-pointer"}`}
-                      >
-                        <span
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                            isCorrect
-                              ? "bg-brand-green text-white"
-                              : isWrong
-                              ? "bg-red-400 text-white"
-                              : isSelected
-                              ? "bg-brand-orange text-white"
-                              : "bg-gray-200 text-gray-600"
-                          }`}
-                        >
-                          {opt.letter}
-                        </span>
-                        <span className="text-gray-700">{opt.text}</span>
-                        {isCorrect && <span className="ml-auto text-brand-green">✅</span>}
-                        {isWrong && <span className="ml-auto text-red-400">❌</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-                {!checked[qi] && (
-                  <button
-                    onClick={() => {
-                      if (answers[qi]) setChecked({ ...checked, [qi]: true });
-                    }}
-                    disabled={!answers[qi]}
-                    className={`mt-3 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      answers[qi]
-                        ? "bg-brand-red text-white hover:bg-red-700"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    Controleer
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Markdown content */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up prose-lesson">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
-      </div>
 
       {/* Complete button */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 text-center animate-slide-up">

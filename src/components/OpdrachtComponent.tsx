@@ -69,9 +69,9 @@ export default function OpdrachtComponent({
   const [previousResult, setPreviousResult] = useState<VoortgangData | null>(null);
   const [savedDraft, setSavedDraft] = useState(false);
 
-  // Initialize antwoorden
+  // Initialize antwoorden - only for open questions (tekst type)
   const initialAntwoorden: AntwoordData = {};
-  [...opdrachten.openVragen, ...opdrachten.quizVragen].forEach((vraag) => {
+  opdrachten.openVragen.forEach((vraag) => {
     initialAntwoorden[vraag.id] = '';
   });
 
@@ -172,20 +172,16 @@ export default function OpdrachtComponent({
 
   const handleRetry = () => {
     setResult(null);
-    setAntwoorden(initialAntwoorden);
+    // Reset only open questions
+    const resetAntwoorden: AntwoordData = {};
+    opdrachten.openVragen.forEach((vraag) => {
+      resetAntwoorden[vraag.id] = '';
+    });
+    setAntwoorden(resetAntwoorden);
     setPreviousResult(null);
   };
 
   const isPassed = result?.score !== undefined && result.score >= PASSING_SCORE;
-
-  // Berekent totale score voor quiz
-  const calculateQuizScore = () => {
-    if (!result?.details || !result.details.length) return 0;
-
-    const quizVragen = result.details.filter(detail => detail.id.startsWith('q'));
-    const correctAnswers = quizVragen.filter(detail => detail.score === 100).length;
-    return Math.round((correctAnswers / quizVragen.length) * 40);
-  };
 
   // Berekent score voor open vragen
   const calculateOpenQuestionsScore = () => {
@@ -225,11 +221,11 @@ export default function OpdrachtComponent({
 
       {result === null ? (
         <>
-          {/* Open vragen */}
+          {/* Open vragen only */}
           {opdrachten.openVragen.length > 0 && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                📝 Open Vragen ({60}% van de score)
+                📝 Open Vragen (Oefeningen)
               </h4>
               <div className="space-y-6">
                 {opdrachten.openVragen.map((vraag, index) => (
@@ -256,66 +252,26 @@ export default function OpdrachtComponent({
             </div>
           )}
 
-          {/* Quiz vragen */}
-          {opdrachten.quizVragen.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                🎯 Quiz ({40}% van de score)
-              </h4>
-              <div className="space-y-6">
-                {opdrachten.quizVragen.map((vraag, index) => (
-                  <div key={vraag.id} className="border border-gray-200 rounded-lg p-4">
-                    <p className="font-medium text-gray-800 mb-3">
-                      <span className="text-brand-red font-semibold">{index + 1}.</span> {vraag.vraag}
-                    </p>
-                    <div className="space-y-2">
-                      {vraag.opties?.map((optie) => (
-                        <label
-                          key={optie.waarde}
-                          className="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
-                        >
-                          <input
-                            type="radio"
-                            name={vraag.id}
-                            value={optie.waarde}
-                            checked={antwoorden[vraag.id] === optie.waarde}
-                            onChange={(e) => handleAntwoordChange(vraag.id, e.target.value)}
-                            disabled={loading}
-                            className="w-4 h-4 text-brand-green focus:ring-brand-green"
-                          />
-                          <span className="text-gray-700">{optie.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {previousResult?.antwoorden[vraag.id] && (
-                      <div className="mt-2 text-xs text-gray-500">
-                        Je vorige antwoord is bewaard.
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Indienen knop */}
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-brand-red text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Indienen...
-              </>
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Indienen voor correctie
-              </>
-            )}
-          </button>
+          {opdrachten.openVragen.length > 0 && (
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-brand-red text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Indienen...
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  Indienen voor correctie
+                </>
+              )}
+            </button>
+          )}
         </>
       ) : (
         /* Resultaat */
@@ -330,7 +286,7 @@ export default function OpdrachtComponent({
               {isPassed ? ' - Geslaagd! 🎉' : ' - Niet geslaagd'}
             </div>
             <div className="mt-4 text-sm text-gray-600">
-              Open vragen: {calculateOpenQuestionsScore()}/60 • Quiz: {calculateQuizScore()}/40
+              Score: {calculateOpenQuestionsScore()}/100
             </div>
           </div>
 
