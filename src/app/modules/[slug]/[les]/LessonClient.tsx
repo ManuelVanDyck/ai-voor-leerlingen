@@ -43,30 +43,46 @@ function parseQuizzes(text: string) {
     rawIndex: number;
   }[] = [];
 
-  // Split into quiz blocks
-  const quizBlocks = text.split(/(?=\*\*Vraag \d+:)/);
-  for (const block of quizBlocks) {
-    const qMatch = block.match(/\*\*Vraag \d+:\*\*\s*(.+)/);
-    if (!qMatch) continue;
+  // Support both formats:
+  // Format 1: "**Vraag X:** Question text"
+  // Format 2: "**X. Question text"
+  const quizPatterns = [
+    /(?=\*\*Vraag \d+:)/,
+    /(?=\*\*\d+\.\s)/
+  ];
 
-    const options: { letter: string; text: string }[] = [];
-    const optRegex = /-\s+([A-D])\)\s+(.+)/g;
-    let optMatch;
-    while ((optMatch = optRegex.exec(block)) !== null) {
-      options.push({ letter: optMatch[1], text: optMatch[2].trim() });
+  for (const pattern of quizPatterns) {
+    const quizBlocks = text.split(pattern);
+    for (const block of quizBlocks) {
+      let qMatch;
+
+      // Try both formats
+      qMatch = block.match(/\*\*Vraag \d+:\*\*\s*(.+)/);
+      if (!qMatch) {
+        qMatch = block.match(/\*\*\d+\.\s*(.+)/);
+        if (!qMatch) continue;
+      }
+
+      const options: { letter: string; text: string }[] = [];
+      const optRegex = /-\s+([A-D])\)\s+(.+)/g;
+      let optMatch;
+      while ((optMatch = optRegex.exec(block)) !== null) {
+        options.push({ letter: optMatch[1], text: optMatch[2].trim() });
+      }
+
+      // Try answer patterns: "*Antwoord: X)" or "*Antwoord: X*" or "*Antwoord: X"
+      const ansMatch = block.match(/\*Antwoord:\s*([A-D])[)\*]?/);
+      if (!ansMatch) continue;
+
+      const rawIndex = text.indexOf(block);
+
+      quizzes.push({
+        question: qMatch[1].trim(),
+        options,
+        answer: ansMatch[1],
+        rawIndex,
+      });
     }
-
-    const ansMatch = block.match(/\*Antwoord:\s*([A-D])\*\*/);
-    if (!ansMatch) continue;
-
-    const rawIndex = text.indexOf(block);
-
-    quizzes.push({
-      question: qMatch[1].trim(),
-      options,
-      answer: ansMatch[1],
-      rawIndex,
-    });
   }
   return quizzes;
 }
@@ -112,46 +128,54 @@ export default function LessonClient({
 
   const quizzes = useMemo(() => parseQuizzes(content), [content]);
   const cleanContent = useMemo(() => {
-    let text = content;
-    // Remove quiz blocks
-    for (const q of quizzes) {
-      const qText = `**Vraag`;
-      // Find and remove each quiz block
+    if (!session?.user) {
+      // When not logged in, show the content as-is
+      return content;
     }
-    // Simple approach: remove lines that are part of quiz questions
+
+    // When logged in, remove quiz sections, exercises, and answer keys
+    let text = content;
+
+    // Remove answer keys anywhere in the content
+    text = text.replace(/\*Antwoord:[^\n]*/g, "");
+
+    // Remove quiz blocks more carefully - find and remove complete blocks
+    const quizRegex = /\*\*(?:Vraag \d+:|\d+\.\s)[^*]+\n(?:- [A-D][^\n]*\n)*\*Antwoord:[^\n]*/g;
+    let match;
+    while ((match = quizRegex.exec(text)) !== null) {
+      text = text.replace(match[0], "");
+    }
+
+    // Remove exercise sections (Oefening)
+    text = text.replace(/###\s*Oefening:[\s\S]*?(?=\n### |\n## )/g, "");
+    text = text.replace(/###\s*Oefening[\s\S]*?(?=\n### |\n## )/g, "");
+
+    // Remove "Check je kennis" sections
+    text = text.replace(/###\s*Check je kennis[\s\S]*?(?=\n### |\n## )/g, "");
+    text = text.replace(/###\s*Check je kennis -.*[\s\S]*?(?=\n### |\n## )/g, "");
+
+    // Remove bonusvraag sections
+    text = text.replace(/\*\*Bonusvraag:[\s\S]*?(?=\n### |\n## )/g, "");
+
+    // Remove empty lines that might have been left behind
     const lines = text.split("\n");
     const filtered: string[] = [];
-    let inQuiz = false;
-    let quizQuestionCount = 0;
+    let lastNonEmpty = -1;
 
     for (const line of lines) {
-      if (/^\*\*Vraag \d+:/.test(line)) {
-        inQuiz = true;
-        quizQuestionCount++;
-        continue;
+      if (line.trim() !== "") {
+        filtered.push(line);
+        lastNonEmpty = filtered.length - 1;
+      } else if (lastNonEmpty >= 0) {
+        // Only keep one empty line between non-empty lines
+        if (filtered[lastNonEmpty].trim() !== "") {
+          filtered.push(line);
+        }
       }
-      if (inQuiz) {
-        if (/^\*\*Vraag \d+:/.test(line)) {
-          continue; // next quiz question
-        }
-        if (/^\*Antwoord:/.test(line)) {
-          inQuiz = false;
-          continue;
-        }
-        if (/^-\s+[A-D]\)/.test(line)) {
-          continue; // quiz option
-        }
-        // If we hit a non-quiz line while in quiz, exit quiz mode
-        if (line.trim() === "" && quizQuestionCount > 0) {
-          inQuiz = false;
-          quizQuestionCount = 0;
-        }
-        continue;
-      }
-      filtered.push(line);
     }
+
     return filtered.join("\n").trim();
-  }, [content, quizzes]);
+  }, [content, session?.user]);
 
   const handleComplete = () => {
     setLessonCompleted(mod.slug, lessonNum);
