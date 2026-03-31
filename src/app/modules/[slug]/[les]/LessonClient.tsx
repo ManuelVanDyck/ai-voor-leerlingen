@@ -12,6 +12,7 @@ import {
 import { CheckCircle2, ArrowLeft, ArrowRight, Brain, Wrench, SearchCheck, GraduationCap, LucideIcon } from "lucide-react";
 import OpdrachtComponent from "@/components/OpdrachtComponent";
 import { module1Opdrachten } from "@/content/module-1-opdrachten";
+import { module3Opdrachten } from "@/content/module-3-opdrachten";
 import { module2Opdrachten, module2OpdrachtenLes2, module2OpdrachtenLes3, module2OpdrachtenLes4 } from "@/content/module-2-opdrachten";
 import {
   module4Opdrachten as module4OpdrachtenLes1,
@@ -233,6 +234,15 @@ export default function LessonClient({
           moduleSlug={mod.slug}
           lesSlug="les-4"
           opdrachten={module2OpdrachtenLes4}
+        />
+      )}
+
+      {/* Opdracht Component (for Module 3) */}
+      {mod.slug === "module-3" && session?.user && (
+        <OpdrachtComponent
+          moduleSlug={mod.slug}
+          lesSlug={`les-${lessonNum}`}
+          opdrachten={module3Opdrachten}
         />
       )}
 
