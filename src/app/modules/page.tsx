@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { modules } from "@/lib/modules";
 import { getModuleProgress, getNextLesson } from "@/lib/progress";
-import { BookOpen, CheckCircle2, ArrowRight, Brain, Wrench, SearchCheck, GraduationCap, LucideIcon } from "lucide-react";
+import { BookOpen, CheckCircle2, ArrowRight, Brain, Wrench, SearchCheck, GraduationCap, LucideIcon, BarChart3 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const iconMap: Record<string, LucideIcon> = { Brain, Wrench, SearchCheck, GraduationCap };
 
@@ -16,6 +17,7 @@ const colorStyles: Record<string, { bg: string; iconBg: string; hover: string; t
 };
 
 export default function ModulesPage() {
+  const { data: session } = useSession();
   const [, setTick] = useState(0);
   const refresh = () => setTick((t) => t + 1);
 
@@ -25,13 +27,16 @@ export default function ModulesPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 bg-gray-50">
+    <div className="max-w-6xl mx-auto px-4 py-8 bg-gray-50">
       <h1 className="text-3xl font-bold text-gray-800 mb-2 animate-fade-in">📚 Alle Modules</h1>
       <p className="text-gray-500 mb-8 animate-fade-in">
         Werk de modules door van 1 tot 4. Elke module sluit af met een quiz!
       </p>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+        {/* Left - Module cards */}
+        <div className="lg:col-span-2">
+          <div className="grid md:grid-cols-2 gap-6">
         {modules.map((m, i) => {
           const prog = getModuleProgress(m.slug, m.lessons);
           const nextLesson = getNextLesson(m.slug, m.lessons);
@@ -81,7 +86,51 @@ export default function ModulesPage() {
               </div>
             </Link>
           );
-        })}
+          </div>
+        </div>
+
+        {/* Right - Progress sidebar */}
+        <div className="mt-8 lg:mt-0">
+          <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24 animate-fade-in">
+            <h2 className="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-brand-red" /> Jouw Voortgang
+            </h2>
+            {session?.user?.name && (
+              <p className="text-sm text-gray-400 mb-5">Hey {session.user.name.split(" ")[0]}! 👋</p>
+            )}
+
+            <div className="space-y-5">
+              {modules.map((m) => {
+                const prog = getModuleProgress(m.slug, m.lessons);
+                const barColor =
+                  prog.percentage === 100
+                    ? "bg-brand-green"
+                    : prog.completed > 0
+                    ? "bg-brand-orange"
+                    : "bg-gray-300";
+
+                return (
+                  <div key={m.slug}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-gray-700">
+                        {m.icon} {m.title}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {prog.completed}/{prog.total}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                        style={{ width: `${prog.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
