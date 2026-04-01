@@ -20,7 +20,7 @@ export default function LoginPage() {
         </p>
 
         <button
-          onClick={() => signIn("google", { callbackUrl: "/" })}
+          onClick={() => signIn("google", { callbackUrl: "/modules" })}
           className="w-full bg-brand-red hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all hover:shadow-lg flex items-center justify-center gap-3"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
