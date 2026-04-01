@@ -1,10 +1,5 @@
 import Link from "next/link";
-import { Mail, MapPin, Brain, Wrench, SearchCheck, GraduationCap } from "lucide-react";
-import { modules } from "@/lib/modules";
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Brain, Wrench, SearchCheck, GraduationCap,
-};
+import { Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -28,20 +23,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Modules</h4>
             <ul className="space-y-3 text-sm text-gray-400">
-              {modules.map((m) => {
-                const Icon = iconMap[m.icon];
-                return (
-                <li key={m.slug}>
-                  <Link
-                    href={`/modules/${m.slug}`}
-                    className="hover:text-brand-orange transition-colors flex items-center gap-2"
-                  >
-                    <span className="w-1.5 h-1.5 bg-brand-orange rounded-full"></span>
-                    {Icon && <Icon className="w-3.5 h-3.5" />} {m.title}
-                  </Link>
-                </li>
-                );
-              })}
+              <li>Wat is AI?</li>
+              <li>AI Tools ontdekken</li>
+              <li>AI Slim gebruiken</li>
+              <li>AI in de les</li>
             </ul>
           </div>
 

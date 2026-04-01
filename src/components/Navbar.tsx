@@ -29,13 +29,15 @@ export default function Navbar() {
               <span className="hidden sm:inline">Home</span>
             </Link>
 
-            <Link
-              href="/modules"
-              className="text-gray-600 hover:text-brand-red hover:bg-gray-50 px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Modules</span>
-            </Link>
+            {status === "authenticated" && (
+              <Link
+                href="/modules"
+                className="text-gray-600 hover:text-brand-red hover:bg-gray-50 px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Modules</span>
+              </Link>
+            )}
 
             {status === "authenticated" && (
               <button
