@@ -43,46 +43,44 @@ function parseQuizzes(text: string) {
     rawIndex: number;
   }[] = [];
 
-  // Support both formats:
-  // Format 1: "**Vraag X:** Question text"
-  // Format 2: "**X. Question text"
-  const quizPatterns = [
-    /(?=\*\*Vraag \d+:)/,
-    /(?=\*\*\d+\.\s)/
-  ];
+  // Single split on both formats combined
+  const pattern = /(?=\*\*(?:Vraag \d+:|\d+\.\s))/;
+  const quizBlocks = text.split(pattern);
 
-  for (const pattern of quizPatterns) {
-    const quizBlocks = text.split(pattern);
-    for (const block of quizBlocks) {
-      let qMatch;
+  const seenIndices = new Set<number>();
 
-      // Try both formats
-      qMatch = block.match(/\*\*Vraag \d+:\*\*\s*(.+)/);
-      if (!qMatch) {
-        qMatch = block.match(/\*\*\d+\.\s*(.+)/);
-        if (!qMatch) continue;
-      }
+  for (const block of quizBlocks) {
+    let qMatch;
 
-      const options: { letter: string; text: string }[] = [];
-      const optRegex = /-\s+([A-D])\)\s+(.+)/g;
-      let optMatch;
-      while ((optMatch = optRegex.exec(block)) !== null) {
-        options.push({ letter: optMatch[1], text: optMatch[2].trim() });
-      }
-
-      // Try answer patterns: "*Antwoord: X)" or "*Antwoord: X*" or "*Antwoord: X"
-      const ansMatch = block.match(/\*Antwoord:\s*([A-D])[)\*]?/);
-      if (!ansMatch) continue;
-
-      const rawIndex = text.indexOf(block);
-
-      quizzes.push({
-        question: qMatch[1].trim(),
-        options,
-        answer: ansMatch[1],
-        rawIndex,
-      });
+    // Try both formats
+    qMatch = block.match(/\*\*Vraag \d+:\*\*\s*(.+)/);
+    if (!qMatch) {
+      qMatch = block.match(/\*\*\d+\.\s*(.+)/);
+      if (!qMatch) continue;
     }
+
+    const options: { letter: string; text: string }[] = [];
+    const optRegex = /-\s+([A-D])\)\s+(.+)/g;
+    let optMatch;
+    while ((optMatch = optRegex.exec(block)) !== null) {
+      options.push({ letter: optMatch[1], text: optMatch[2].trim() });
+    }
+
+    const ansMatch = block.match(/\*Antwoord:\s*([A-D])[)\*]?/);
+    if (!ansMatch) continue;
+
+    const rawIndex = text.indexOf(block);
+
+    // Deduplicate: skip if we already have a quiz at this position
+    if (seenIndices.has(rawIndex)) continue;
+    seenIndices.add(rawIndex);
+
+    quizzes.push({
+      question: qMatch[1].trim(),
+      options,
+      answer: ansMatch[1],
+      rawIndex,
+    });
   }
   return quizzes;
 }
@@ -91,35 +89,40 @@ function parseQuizzes(text: string) {
 function cleanContentForLoggedInUser(text: string): string {
   let result = text;
 
-  // Remove answer keys anywhere in the content first
-  result = result.replace(/\*Antwoord:[^\n]*/g, "");
+  // Step 0: Remove the lesson header (duplicated by the h1 in LessonClient)
+  result = result.replace(/^## Les \d+:.*/m, "");
 
-  // Remove complete quiz blocks with both formats
+  // Step 1: Remove complete quiz blocks FIRST (before removing individual answers)
   // Format 1: **Vraag X:** ... options ... *Antwoord: X
   result = result.replace(
     /\*\*Vraag \d+:\*\*[\s\S]*?\*Antwoord:[^\n]*/g,
     ""
   );
 
-  // Format 2: **X. ... ... *Antwoord: X
+  // Format 2: **X. Question** ... options ... *Antwoord: X
   result = result.replace(
     /\*\*\d+\.\s[\s\S]*?\*Antwoord:[^\n]*/g,
     ""
   );
 
-  // Remove "Check je kennis" sections completely
-  result = result.replace(/###\s*Check je kennis[\s\S]*?(?=\n### |\n## )/g, "");
-  result = result.replace(/###\s*Check je kennis -.*[\s\S]*?(?=\n### |\n## )/g, "");
+  // Step 2: Remove "Check je kennis" sections (including any leftover content)
+  result = result.replace(/###\s*Check je kennis[\s\S]*?$/gm, "");
 
-  // Remove "Oefening" sections completely
-  result = result.replace(/###\s*Oefening:[\s\S]*?(?=\n### |\n## )/g, "");
-  result = result.replace(/###\s*Oefening[\s\S]*?(?=\n### |\n## )/g, "");
+  // Step 3: Remove "Oefening" sections
+  result = result.replace(/###\s*Oefening[^\n]*[\s\S]*?$/gm, "");
 
-  // Remove "Bonusvraag" sections
-  result = result.replace(/\*\*Bonusvraag:[\s\S]*?(?=\n### |\n## )/g, "");
+  // Step 4: Remove "Bonusvraag" blocks
+  result = result.replace(/\*\*Bonusvraag:[\s\S]*?$/gm, "");
 
-  // Remove quiz blocks with numbered questions (**1. Question** format)
-  result = result.replace(/\*\*\d+\.\s[\s\S]*?\*Antwoord:[^\n]*/g, "");
+  // Step 5: Remove any remaining answer lines
+  result = result.replace(/\*Antwoord:[^\n]*/g, "");
+
+  // Step 6: Remove any remaining quiz option lines (- A) ... - D) ...)
+  result = result.replace(/^-\s+[A-D]\)[^\n]*\n?/gm, "");
+
+  // Step 7: Remove any remaining numbered question headers (**1. ... or **Vraag X:**)
+  result = result.replace(/^\*\*\d+\.\s[^\n]*\n?/gm, "");
+  result = result.replace(/^\*\*Vraag \d+:\*\*[^\n]*\n?/gm, "");
 
   // Remove any empty lines that might have been left behind
   const lines = result.split("\n");
@@ -216,6 +219,11 @@ export default function LessonClient({
         </div>
       </div>
 
+      {/* Markdown content */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up prose-lesson">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
+      </div>
+
       {/* Interactive Quiz section (if any) - shown only when logged in */}
       {quizzes.length > 0 && session?.user && (
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up">
@@ -301,44 +309,6 @@ export default function LessonClient({
           </div>
         </div>
       )}
-
-      {/* Quiz section (if any) - shown when not logged in */}
-      {quizzes.length > 0 && !session?.user && (
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            📝 Quiz
-          </h2>
-          <div className="space-y-6">
-            {quizzes.map((quiz, qi) => (
-              <div key={qi} className="border-b border-gray-100 pb-5 last:border-0">
-                <p className="font-medium text-gray-800 mb-3">
-                  {qi + 1}. {quiz.question}
-                </p>
-                <div className="space-y-2">
-                  {quiz.options.map((opt) => (
-                    <button
-                      key={opt.letter}
-                      className="w-full text-left p-3 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-all flex items-center gap-3"
-                    >
-                      <span
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600 flex-shrink-0"
-                      >
-                        {opt.letter}
-                      </span>
-                      <span className="text-gray-700">{opt.text}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Markdown content */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 animate-slide-up prose-lesson">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
-      </div>
 
       {/* Opdracht Component (for Module 1 Les 3) */}
       {mod.slug === "module-1" && lessonNum === 3 && session?.user && (
