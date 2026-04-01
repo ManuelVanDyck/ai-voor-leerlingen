@@ -22,6 +22,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // Als er een expliciete callbackUrl is (bijv. uitloggen), die gebruiken
+      if (url && url !== `${baseUrl}/login`) return url;
       // Na inloggen altijd naar /modules
       return `${baseUrl}/modules`;
     },
