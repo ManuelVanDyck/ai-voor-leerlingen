@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Home, BookOpen, LogOut } from "lucide-react";
+import { Home, BookOpen, LogOut, BarChart3 } from "lucide-react";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -36,6 +36,16 @@ export default function Navbar() {
               >
                 <BookOpen className="w-4 h-4" />
                 <span className="hidden sm:inline">Modules</span>
+              </Link>
+            )}
+
+            {status === "authenticated" && session?.user?.email?.includes("@classroomatheneum.be") && (
+              <Link
+                href="/admin/voortgang"
+                className="text-gray-600 hover:text-brand-red hover:bg-gray-50 px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Beheer</span>
               </Link>
             )}
 
