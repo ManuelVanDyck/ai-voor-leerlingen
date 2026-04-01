@@ -1,139 +1,90 @@
-"use client";
-
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { modules } from "@/lib/modules";
-import { getModuleProgress } from "@/lib/progress";
-import { BookOpen, CheckCircle2, ArrowRight, Brain, Wrench, SearchCheck, GraduationCap, LucideIcon, Bot, BarChart3 } from "lucide-react";
-
-const iconMap: Record<string, LucideIcon> = {
-  Brain,
-  Wrench,
-  SearchCheck,
-  GraduationCap,
-};
-
-const colorStyles: Record<string, { bg: string; iconBg: string; hover: string; text: string; desc: string }> = {
-  red: { bg: "bg-brand-red", iconBg: "bg-white/20", hover: "hover:bg-red-700", text: "text-white", desc: "text-white/80" },
-  green: { bg: "bg-brand-green", iconBg: "bg-white/20", hover: "hover:bg-teal-700", text: "text-white", desc: "text-white/80" },
-  orange: { bg: "bg-brand-orange", iconBg: "bg-white/20", hover: "hover:bg-orange-600", text: "text-white", desc: "text-white/80" },
-  cream: { bg: "bg-brand-cream", iconBg: "bg-brand-orange/20", hover: "hover:bg-orange-100", text: "text-gray-800", desc: "text-gray-600" },
-};
+import { Bot, BookOpen, Brain, Wrench, SearchCheck, GraduationCap, ArrowRight, Shield, Sparkles, Users } from "lucide-react";
 
 export default function HomePage() {
-  const { data: session } = useSession();
-  const [, setTick] = useState(0);
-  const refresh = () => setTick((t) => t + 1);
-
-  useEffect(() => {
-    window.addEventListener("storage", refresh);
-    return () => window.removeEventListener("storage", refresh);
-  }, []);
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 bg-gray-50">
-      <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Hero */}
-          <div className="animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3 flex items-center gap-3">
-              <Bot className="w-9 h-9 text-brand-red" /> Welkom bij AI voor Leerlingen!
-            </h1>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-2xl">
-              Ontdek de wereld van kunstmatige intelligentie in 4 modules. Leer wat AI is,
-              ontdek handige tools, gebruik AI slim en ontdek hoe AI je kan helpen in de les.
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-4 pt-16 pb-12 text-center">
 
-          {/* Module cards */}
-          <div className="grid sm:grid-cols-2 gap-5">
-            {modules.map((m, i) => {
-              const prog = getModuleProgress(m.slug, m.lessons);
-              const s = colorStyles[m.color];
-              const Icon = iconMap[m.icon];
-              return (
-                <Link
-                  key={m.slug}
-                  href={`/modules/${m.slug}`}
-                  className={`group block h-full animate-slide-up`}
-                  style={{ animationDelay: `${i * 100}ms`, animationFillMode: "backwards" }}
-                >
-                  <div className={`${s.bg} ${s.hover} rounded-2xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={`${s.iconBg} w-12 h-12 rounded-xl flex items-center justify-center`}>
-                        {Icon && <Icon className={`w-6 h-6 ${s.text}`} />}
-                      </div>
-                      {prog.percentage === 100 && (
-                        <span className="flex items-center gap-1 text-white text-sm font-medium bg-white/20 px-2 py-1 rounded-full">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Afgerond
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-xl mb-2 text-white">
-                      Module {i + 1}: {m.title}
-                    </h3>
-                    <p className={`${s.desc} text-sm leading-relaxed mb-4`}>{m.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1 text-xs text-white/60">
-                        <BookOpen className="w-3.5 h-3.5" />
-                        {m.lessons} lessen
-                      </span>
-                      <span className="flex items-center gap-1 text-white font-medium text-sm">
-                        Start <ArrowRight className="w-4 h-4" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-3">
+          <Bot className="w-10 h-10 text-brand-red" />
+          AI voor Leerlingen
+        </h1>
+        <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+          Ontdek de wereld van kunstmatige intelligentie. Leer wat AI is, ontdek handige tools,
+          gebruik AI slim en ontdek hoe AI je kan helpen in de les.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 bg-brand-red text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl mt-8 text-lg"
+        >
+          Start met leren <ArrowRight className="w-5 h-5" />
+        </Link>
+      </section>
 
-        {/* Right column - Progress */}
-        <div className="mt-8 lg:mt-0">
-          <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24 animate-fade-in">
-            <h2 className="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-brand-red" /> Jouw Voortgang</h2>
-            {session?.user?.name && (
-              <p className="text-sm text-gray-400 mb-5">Hey {session.user.name.split(" ")[0]}! 👋</p>
-            )}
-
-            <div className="space-y-5">
-              {modules.map((m) => {
-                const prog = getModuleProgress(m.slug, m.lessons);
-                const barColor =
-                  prog.percentage === 100
-                    ? "bg-brand-green"
-                    : prog.completed > 0
-                    ? "bg-brand-orange"
-                    : "bg-gray-300";
-
-                return (
-                  <div key={m.slug}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium text-gray-700">
-                        {m.icon} {m.title}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {prog.completed}/{prog.total}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-                        style={{ width: `${prog.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Modules overview (read-only, no links) */}
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">4 Modules, 16 Lessen</h2>
+        <div className="grid sm:grid-cols-2 gap-5">
+          {[
+            { icon: Brain, title: "Wat is AI?", desc: "Ontdek wat AI is, welke soorten er bestaan en herken AI in je dagelijks leven.", lessons: 3, color: "bg-brand-red" },
+            { icon: Wrench, title: "AI Tools ontdekken", desc: "Leer ChatGPT, Gemini en afbeeldings-AI kennen. Ontdek hoe je goede prompts schrijft.", lessons: 4, color: "bg-brand-green" },
+            { icon: SearchCheck, title: "AI Slim gebruiken", desc: "Herken valkuilen zoals hallucinaties en fake news. Leer kritisch omgaan met AI.", lessons: 5, color: "bg-brand-orange" },
+            { icon: GraduationCap, title: "AI in de les", desc: "Gebruik AI als study buddy en bij schrijfopdrachten. Ontdek de AI spelregels.", lessons: 4, color: "bg-gray-700" },
+          ].map((m) => (
+            <div key={m.title} className={`${m.color} rounded-2xl p-6 shadow-lg`}>
+              <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-3">
+                <m.icon className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-bold text-xl text-white mb-2">{m.title}</h3>
+              <p className="text-white/80 text-sm leading-relaxed mb-3">{m.desc}</p>
+              <span className="flex items-center gap-1 text-xs text-white/60">
+                <BookOpen className="w-3.5 h-3.5" />
+                {m.lessons} lessen
+              </span>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <div className="grid sm:grid-cols-3 gap-6">
+          <div className="text-center p-6 bg-white rounded-xl shadow-sm">
+            <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Shield className="w-6 h-6 text-brand-red" />
+            </div>
+            <h3 className="font-bold text-gray-800 mb-1">Veilig leren</h3>
+            <p className="text-sm text-gray-500">Alles binnen een beveiligde omgeving, alleen toegankelijk voor leerlingen van onze school.</p>
+          </div>
+          <div className="text-center p-6 bg-white rounded-xl shadow-sm">
+            <div className="w-12 h-12 bg-brand-green/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-6 h-6 text-brand-green" />
+            </div>
+            <h3 className="font-bold text-gray-800 mb-1">Interactief</h3>
+            <p className="text-sm text-gray-500">Quizzen, oefeningen en AI-gebaseerde feedback om echt te leren, niet alleen te lezen.</p>
+          </div>
+          <div className="text-center p-6 bg-white rounded-xl shadow-sm">
+            <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Users className="w-6 h-6 text-brand-orange" />
+            </div>
+            <h3 className="font-bold text-gray-800 mb-1">Op jouw tempo</h3>
+            <p className="text-sm text-gray-500">Volg de lessen waar en wanneer je wilt. Je voortgang wordt automatisch bijgehouden.</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="max-w-4xl mx-auto px-4 py-12 text-center">
+        <p className="text-gray-600 mb-6">Klaar om aan de slag te gaan met AI?</p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 bg-brand-red text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl text-lg"
+        >
+          Log in en begin <ArrowRight className="w-5 h-5" />
+        </Link>
+      </section>
     </div>
   );
 }
