@@ -16,7 +16,7 @@ export default function Footer() {
               <span>AI voor Leerlingen</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
-              AI cursus voor leerlingen 3de jaar secundair onderwijs — GO! atheneum Gentbrugge
+              AI cursus voor leerlingen secundair onderwijs — GO! atheneum Gentbrugge
             </p>
           </div>
 
