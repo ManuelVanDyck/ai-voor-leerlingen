@@ -16,7 +16,7 @@ export default function LoginPage() {
           <Bot className="w-7 h-7 text-brand-red" /> AI voor Leerlingen
         </h1>
         <p className="text-gray-500 mb-8">
-          Welkom bij de AI cursus voor 3de jaar!
+          Welkom bij de AI cursus!
         </p>
 
         <button
