@@ -86,6 +86,7 @@ export default function ModulesPage() {
               </div>
             </Link>
           );
+        })}
           </div>
         </div>
 
