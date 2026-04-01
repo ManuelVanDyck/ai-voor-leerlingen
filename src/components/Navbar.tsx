@@ -41,7 +41,7 @@ export default function Navbar() {
 
             {status === "authenticated" && (
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="ml-2 pl-2 border-l border-gray-300 text-gray-600 hover:text-brand-red hover:bg-gray-50 px-3 py-2 rounded-lg transition-all font-medium flex items-center gap-2"
                 title="Uitloggen"
               >
