@@ -10,6 +10,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: { signIn: "/login", error: "/login" },
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
@@ -20,7 +21,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (session.user && token.sub) Object.assign(session.user, { id: token.sub });
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Na inloggen altijd naar /modules
+      return `${baseUrl}/modules`;
+    },
   },
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login", error: "/login" },
 });
