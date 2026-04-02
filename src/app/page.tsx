@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Bot, BookOpen, Brain, Wrench, SearchCheck, GraduationCap, ArrowRight, Shield, Sparkles, Users } from "lucide-react";
 
