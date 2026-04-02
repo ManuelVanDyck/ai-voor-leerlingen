@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Home, BookOpen, LogOut, BarChart3 } from "lucide-react";
+import { isAdmin } from "@/lib/admin";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -39,7 +40,7 @@ export default function Navbar() {
               </Link>
             )}
 
-            {status === "authenticated" && session?.user?.email?.includes("@classroomatheneum.be") && (
+            {status === "authenticated" && isAdmin(session?.user?.email) && (
               <Link
                 href="/admin/voortgang"
                 className="text-gray-600 hover:text-brand-red hover:bg-gray-50 px-4 py-2 rounded-lg transition-all font-medium flex items-center gap-2"

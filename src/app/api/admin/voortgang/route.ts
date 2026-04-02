@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@/lib/auth';
+import { isAdmin } from '@/lib/admin';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!session.user.email.includes('@classroomatheneum.be')) {
+  if (!isAdmin(session.user.email)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!session.user.email.includes('@classroomatheneum.be')) {
+  if (!isAdmin(session.user.email)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { isAdmin } from "@/lib/admin";
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import {
@@ -49,7 +50,7 @@ export default function AdminVoortgangPage() {
   useEffect(() => {
     if (status === 'authenticated') {
       const email = session?.user?.email || '';
-      if (!email.includes('@classroomatheneum.be')) {
+      if (!isAdmin(email)) {
         window.location.href = '/';
         return;
       }
@@ -145,7 +146,7 @@ export default function AdminVoortgangPage() {
   }
 
   const userEmail = session?.user?.email || '';
-  if (!userEmail.includes('@classroomatheneum.be')) {
+  if (!isAdmin(userEmail)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm text-center max-w-md">
