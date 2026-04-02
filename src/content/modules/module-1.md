@@ -40,7 +40,7 @@ AI herken je aan drie dingen:
 
 **Voorbeelden uit jouw wereld**
 
-📱 **TikTok algoritme**
+📱 **TikTok algoritme:**
 Scroll je door je For You Page? Elke seconde leert TikTok van je:
 - Welke video's kijk je tot het einde?
 - Welke liken of deel je?
@@ -48,20 +48,20 @@ Scroll je door je For You Page? Elke seconde leert TikTok van je:
 
 Die data gebruikt AI om je feed te personaliseren. Daarom zie jij andere video's dan je beste vriend.
 
-🎬 **Netflix aanbevelingen**
-Ooit gewonderd hoe Netflix precies weet wat je wilt kijken? AI analyseert:
+🎬 **Netflix aanbevelingen:**
+Ooit afgevraagd hoe Netflix precies weet wat je wilt kijken? AI analyseert:
 - Wat je eerder bekeek
 - Hoe lang je keek
 - Wat je aan je watchlist toevoegde
 - Zelfs op welk moment van de dag je kijkt!
 
-👻 **Snapchat filters**
+👻 **Snapchat filters:**
 Die grappige filters die je horens geven of je gezicht veranderen? AI herkent je gezicht, je ogen, je mond - allemaal in real-time. Super indrukwekkend!
 
-🎤 **Siri en Google Assistant**
+🎤 **Siri en Google Assistant:**
 "Hey Siri, zet een wekker voor 7 uur." En Siri snapt het! Spraakherkenning is AI die geleerd heeft om menselijke taal te begrijpen. Heel lastig, want iedereen praat anders.
 
-🎮 **Gaming**
+🎮 **Gaming:**
 In games zoals FIFA of Call of Duty past de computertegenstander zich aan jouw speelstijl aan. Hoe beter jij wordt, hoe slimmer de AI wordt. Spannend!
 
 **Waarom is AI zo populair?**
@@ -135,7 +135,7 @@ Deel je bevindingen met je buur. Vergelijk: Hebben jullie dezelfde apps gevonden
 
 ### De les
 
-**Niet alle AI is hetzelfde**
+**Niet alle AI is hetzelfde:**
 
 Je weet nu wat AI is. Maar wist je dat er verschillende soorten AI bestaan? Het is als met muziek: je hebt pop, rap, rock, elektronisch... Allemaal muziek, maar toch anders. Zo is het ook met AI!
 
@@ -195,11 +195,11 @@ Je kunt dingen creëren die je vroeger niet kon! Geen artiest? Toch mooie afbeel
 
 **Samenvatting in een tabel**
 
-| Type AI | Wat doet het? | Voorbeeld |
-|---------|---------------|-----------|
-| Aanbevelingen | Voorspelt wat jij leuk vindt | Netflix aanbevelingen |
-| Beeldherkenning | Begrijpt afbeeldingen | Face ID, Google Photos |
-| Generatieve AI | Creëert nieuwe content | ChatGPT, DALL-E |
+| Type AI          | Wat doet het?                | Voorbeeld              |
+|------------------|------------------------------|------------------------|
+| Aanbevelingen    | Voorspelt wat jij leuk vindt | Netflix aanbevelingen  |
+| Beeldherkenning  | Begrijpt afbeeldingen        | Face ID, Google Photos |
+| Generatieve AI   | Creëert nieuwe content       | ChatGPT, DALL-E        |
 
 **Welke AI gebruik jij het vaakst?**
 
@@ -278,11 +278,11 @@ In de vorige lessen heb je geleerd wat AI is en welke soorten er bestaan. Tijd o
 
 Houd gedurende 24 uur bij wanneer je AI tegenkomt. Gebruik dit schema:
 
-| Tijd | App/Tool | Type AI | Wat doet het? |
-|------|----------|---------|---------------|
-| 7:30 | Spotify | Aanbeveling | Playlist voorgesteld |
-| 8:15 | Instagram | Beeldherkenning | Alt-tekst voor foto |
-| ... | ... | ... | ... |
+| Tijd | App/Tool  | Type AI         | Wat doet het?        |
+|------|-----------|-----------------|----------------------|
+| 7:30 | Spotify   | Aanbeveling     | Playlist voorgesteld |
+| 8:15 | Instagram | Beeldherkenning | Alt-tekst voor foto  |
+| ...  | ...       | ...             | ...                  |
 
 Probeer minstens 10 voorbeelden te vinden!
 

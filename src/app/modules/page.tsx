@@ -113,8 +113,8 @@ export default function ModulesPage() {
                 return (
                   <div key={m.slug}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium text-gray-700">
-                        {m.icon} {m.title}
+                      <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        {(() => { const I = iconMap[m.icon]; return I ? <I className="w-4 h-4" /> : null; })()} {m.title}
                       </span>
                       <span className="text-xs text-gray-400">
                         {prog.completed}/{prog.total}

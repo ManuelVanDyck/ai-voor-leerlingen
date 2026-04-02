@@ -59,14 +59,14 @@ Gemini (voorheen Bard) is Google's antwoord op ChatGPT. Het werd gelanceerd in 2
 
 **Vergelijking: ChatGPT vs Gemini**
 
-| Eigenschap | ChatGPT | Gemini |
-|------------|---------|--------|
-| Maker | OpenAI | Google |
-| Prijs | Gratis + Betaalde optie | Gratis |
-| Internettoegang | Alleen in betaalde versie | Ja, altijd |
-| Afbeeldingen uploaden | Ja | Ja |
-| Meertalig | Ja | Ja |
-| Koppeling met andere apps | Beperkt | Google apps |
+| Eigenschap                | ChatGPT                   | Gemini     |
+|---------------------------|---------------------------|------------|
+| Maker                     | OpenAI                    | Google     |
+| Prijs                     | Gratis + Betaalde optie   | Gratis     |
+| Internettoegang           | Alleen in betaalde versie | Ja, altijd |
+| Afbeeldingen uploaden     | Ja                        | Ja         |
+| Meertalig                 | Ja                        | Ja         |
+| Koppeling met andere apps | Beperkt                   | Google apps|
 
 *Welke moet jij gebruiken?*
 - **ChatGPT** als je de meest populaire tool wilt en veel tutorials wilt vinden
@@ -417,13 +417,13 @@ Midjourney maakt de meest artistieke en gedetailleerde afbeeldingen, maar is wat
 
 **Vergelijkingstabel**
 
-| Eigenschap | DALL-E | Canva AI | Midjourney |
-|------------|--------|----------|------------|
-| Toegankelijkheid | Makkelijk | Heel makkelijk | Moeilijker |
-| Prijs | ChatGPT Plus | Freemium | Betaald |
-| Best voor | Realisme | Social media | Kunst |
-| Kwaliteit | Goed | Goed | Uitstekend |
-| Snelheid | Snel | Snel | Traag |
+| Eigenschap       | DALL-E       | Canva AI       | Midjourney |
+|------------------|--------------|----------------|------------|
+| Toegankelijkheid | Makkelijk    | Heel makkelijk | Moeilijker |
+| Prijs            | ChatGPT Plus | Freemium       | Betaald    |
+| Best voor        | Realisme     | Social media   | Kunst      |
+| Kwaliteit        | Goed         | Goed           | Uitstekend |
+| Snelheid         | Snel         | Snel           | Traag      |
 
 **Tips voor betere afbeeldingen**
 
