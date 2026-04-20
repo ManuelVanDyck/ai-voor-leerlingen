@@ -11,7 +11,7 @@
   "dependencies": {
     "@sanity/image-url": "^1.2.0",
     "@supabase/supabase-js": "^2.104.0",
-    "lucide-react": "^1.7.0",
+    "lucide-react": "^1.8.0",
     "next": "^16.2.4",
     "next-auth": "^5.0.0-beta.30",
     "next-sanity": "^12.2.1",
